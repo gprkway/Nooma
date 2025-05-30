@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Sparkles, Compass, ShoppingBag, User } from 'lucide-react';
+import { Home, ShoppingBag, User, Eye, Sparkles } from 'lucide-react';
 
 export default function BottomNav() {
   const pathname = usePathname();
@@ -16,12 +16,12 @@ export default function BottomNav() {
     { 
       name: 'Insights',
       path: '/insights',
-      icon: Sparkles
+      icon: Eye
     },
     { 
-      name: 'Path',
-      path: '/path',
-      icon: Compass,
+      name: 'Dream',
+      path: '/dream',
+      icon: Sparkles,
       isCenter: true
     },
     { 
@@ -42,47 +42,55 @@ export default function BottomNav() {
         <div className="flex items-center justify-around h-16 px-2">
           {navItems.map((item) => {
             const isActive = pathname === item.path;
-            const Icon = item.icon;
             
+            if (item.isCenter) {
+              return (
+                <Link 
+                  key={item.path}
+                  href={item.path}
+                  className="w-12 h-12 -mt-6 grid place-items-center"
+                >
+                  <button 
+                    className="w-12 h-12 rounded-full flex items-center justify-center
+                      bg-[#f7f5f2] text-black ring-1 ring-gray-300
+                      shadow-md shadow-black/5 hover:shadow-[0_0_8px_rgba(0,0,0,0.05)]
+                      transition-all duration-200"
+                  >
+                    <Sparkles 
+                      size={20}
+                      strokeWidth={1.5}
+                      className="text-black"
+                    />
+                  </button>
+                </Link>
+              );
+            }
+            
+            const Icon = item.icon;
             return (
               <Link
                 key={item.path}
                 href={item.path}
-                className={`relative flex flex-col items-center justify-center
-                  transition-all duration-200
-                  ${item.isCenter ? 'w-16 -mt-6' : 'w-full'}`}
+                className="relative flex flex-col items-center justify-center w-full
+                  transition-all duration-200"
               >
-                {/* Center tab special styling */}
-                {item.isCenter && (
-                  <div className={`absolute inset-0 rounded-full transition-colors
-                    ${isActive 
-                      ? 'bg-white/10' 
-                      : 'bg-white/5'
-                    }`}
-                  />
-                )}
-
-                {/* Icon container */}
                 <div className={`relative p-2 rounded-full transition-all
-                  ${item.isCenter 
-                    ? 'bg-white text-black w-12 h-12 flex items-center justify-center'
-                    : 'text-white/60 hover:text-white'
-                  }`}
+                  ${item.name === 'Insights' 
+                    ? 'text-gray-400 hover:text-white' 
+                    : 'text-white/60 hover:text-white'}`}
                 >
                   <Icon 
-                    size={item.isCenter ? 24 : 20} 
+                    size={20} 
                     className={`transition-transform duration-200
-                      ${isActive && !item.isCenter ? 'scale-110' : ''}`}
+                      ${isActive ? 'scale-110' : ''}`}
+                    strokeWidth={1.5}
                   />
                 </div>
 
-                {/* Label - hidden for center tab */}
-                {!item.isCenter && (
-                  <span className={`text-[10px] font-medium mt-1 transition-colors
-                    ${isActive ? 'text-white' : 'text-white/60'}`}>
-                    {item.name}
-                  </span>
-                )}
+                <span className={`text-[10px] font-medium mt-1 transition-colors
+                  ${isActive ? 'text-white' : 'text-white/60'}`}>
+                  {item.name}
+                </span>
               </Link>
             );
           })}
