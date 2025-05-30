@@ -10,6 +10,28 @@ export default function DreamLog() {
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showTip, setShowTip] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+  // Handle keyboard visibility
+  useEffect(() => {
+    const handleResize = () => {
+      // Check if keyboard is likely visible (window height is significantly reduced)
+      const isKeyboard = window.visualViewport?.height < window.outerHeight * 0.8;
+      setIsKeyboardVisible(isKeyboard);
+    };
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleResize);
+      window.visualViewport.addEventListener('scroll', handleResize);
+    }
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleResize);
+        window.visualViewport.removeEventListener('scroll', handleResize);
+      }
+    };
+  }, []);
 
   // Format date for dividers
   const formatDate = (date) => {
@@ -70,13 +92,15 @@ export default function DreamLog() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f9f6f2] text-black">
+    <div className="min-h-[100dvh] bg-[#f9f6f2] text-black flex flex-col">
       <Header />
       
-      <main className="pb-32 pt-16"> {/* Increased bottom padding for input */}
-        <div className="flex flex-col items-center px-6">
-          {/* Dreams container */}
-          <div className="w-full max-w-md overflow-y-auto max-h-[calc(100vh-16rem)] pt-2">
+      <main className={`flex-1 flex flex-col ${isKeyboardVisible ? 'pb-4' : 'pb-32'} pt-16`}>
+        <div className="flex flex-col items-center px-6 flex-1">
+          {/* Dreams container - scrollable when keyboard is visible */}
+          <div className={`w-full max-w-md overflow-y-auto 
+            ${isKeyboardVisible ? 'flex-1' : 'max-h-[calc(100dvh-16rem)]'} 
+            pt-2`}>
             {Object.entries(groupedDreams).map(([date, dateDreams]) => (
               <div key={date} className="mb-6">
                 <div className="text-sm text-gray-500 mb-3 px-1">
@@ -112,8 +136,10 @@ export default function DreamLog() {
             ))}
           </div>
 
-          {/* Sticky note input - positioned at bottom when dreams exist */}
-          <div className={`w-full max-w-md ${dreams.length > 0 ? 'fixed bottom-20 left-1/2 -translate-x-1/2' : 'mt-8'}`}>
+          {/* Sticky note input - adjusts position based on keyboard */}
+          <div className={`w-full max-w-md 
+            ${dreams.length > 0 && !isKeyboardVisible ? 'fixed bottom-20 left-1/2 -translate-x-1/2' : 'mt-8'}
+            ${isKeyboardVisible ? 'sticky bottom-0 bg-[#f9f6f2] pb-safe' : ''}`}>
             <textarea
               value={inputValue}
               onChange={handleInputChange}
@@ -126,8 +152,8 @@ export default function DreamLog() {
         </div>
       </main>
 
-      {/* Floating tip */}
-      {showTip && (
+      {/* Floating tip - only show when keyboard is not visible */}
+      {showTip && !isKeyboardVisible && (
         <div className="fixed bottom-[4rem] left-1/2 -translate-x-1/2 z-50
           bg-white text-xs rounded-full px-3 py-1 shadow-md
           transition-all duration-300">
@@ -135,15 +161,17 @@ export default function DreamLog() {
         </div>
       )}
 
-      {/* Button wrapper with glow */}
-      <div 
-        onClick={handleSaveDream}
-        className={`fixed bottom-0 left-0 right-0 z-40 transition-all duration-300
-          ${isTyping ? 'shadow-[0_0_20px_rgba(159,122,234,0.6)]' : ''}
-          cursor-pointer`}
-      >
-        <BottomNav />
-      </div>
+      {/* Button wrapper with glow - hide when keyboard is visible */}
+      {!isKeyboardVisible && (
+        <div 
+          onClick={handleSaveDream}
+          className={`fixed bottom-0 left-0 right-0 z-40 transition-all duration-300
+            ${isTyping ? 'shadow-[0_0_20px_rgba(159,122,234,0.6)]' : ''}
+            cursor-pointer pb-safe`}
+        >
+          <BottomNav />
+        </div>
+      )}
     </div>
   );
 } 
